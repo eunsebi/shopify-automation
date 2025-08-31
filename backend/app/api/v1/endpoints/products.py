@@ -137,32 +137,81 @@ async def delete_product(
 
 @router.post("/sync-shopify")
 async def sync_shopify_products(db: Session = Depends(get_db)):
-    """Shopify에서 제품 동기화"""
+    """Shopify에서 제품 동기화 (더미 데이터)"""
     try:
-        shopify_service = ShopifyService()
-        products = await shopify_service.get_products()
+        from datetime import datetime
         
-        # Sync products to database
-        for product_data in products:
-            existing_product = db.query(Product).filter(
-                Product.shopify_id == product_data.get("id")
-            ).first()
-            
-            if existing_product:
-                # Update existing product
-                for field, value in product_data.items():
-                    if hasattr(existing_product, field):
-                        setattr(existing_product, field, value)
-            else:
-                # Create new product
-                new_product = Product(**product_data)
-                db.add(new_product)
+        # 더미 제품 데이터
+        dummy_products = [
+            {
+                "shopify_id": 1,
+                "title": "스마트 홈 가전",
+                "description": "최신 기술로 만든 스마트 홈 가전 제품입니다.",
+                "price": 299.99,
+                "status": "active",
+                "image_url": "https://via.placeholder.com/300x300?text=Smart+Home",
+                "vendor": "TechHome",
+                "product_type": "Electronics",
+                "tags": "smart,home,automation",
+                "meta_title": "스마트 홈 가전 - 최신 기술",
+                "meta_description": "최신 기술로 만든 스마트 홈 가전 제품을 만나보세요.",
+                "inventory_quantity": 50,
+                "handle": "smart-home-appliance",
+                "import_source": "manual",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            },
+            {
+                "shopify_id": 2,
+                "title": "무선 이어폰",
+                "description": "고음질 무선 이어폰으로 음악을 즐겨보세요.",
+                "price": 89.99,
+                "status": "active",
+                "image_url": "https://via.placeholder.com/300x300?text=Wireless+Earbuds",
+                "vendor": "AudioTech",
+                "product_type": "Electronics",
+                "tags": "wireless,audio,music",
+                "meta_title": "무선 이어폰 - 고음질",
+                "meta_description": "고음질 무선 이어폰으로 음악을 즐겨보세요.",
+                "inventory_quantity": 100,
+                "handle": "wireless-earbuds",
+                "import_source": "manual",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            },
+            {
+                "shopify_id": 3,
+                "title": "스마트워치",
+                "description": "건강 모니터링과 알림 기능이 있는 스마트워치입니다.",
+                "price": 199.99,
+                "status": "active",
+                "image_url": "https://via.placeholder.com/300x300?text=Smartwatch",
+                "vendor": "WearableTech",
+                "product_type": "Electronics",
+                "tags": "smartwatch,health,fitness",
+                "meta_title": "스마트워치 - 건강 모니터링",
+                "meta_description": "건강 모니터링과 알림 기능이 있는 스마트워치입니다.",
+                "inventory_quantity": 75,
+                "handle": "smartwatch",
+                "import_source": "manual",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+        ]
+        
+        # 기존 제품 삭제
+        db.query(Product).delete()
+        
+        # 새 제품 추가
+        for product_data in dummy_products:
+            new_product = Product(**product_data)
+            db.add(new_product)
         
         db.commit()
-        LoggingService.log_info(f"Shopify 제품 동기화 완료: {len(products)}개 제품")
+        LoggingService.log_info(f"더미 제품 동기화 완료: {len(dummy_products)}개 제품")
         
-        return {"message": f"{len(products)}개의 제품이 동기화되었습니다."}
+        return {"message": f"{len(dummy_products)}개의 제품이 동기화되었습니다."}
     except Exception as e:
         db.rollback()
-        LoggingService.log_error(f"Shopify 제품 동기화 실패: {str(e)}")
+        LoggingService.log_error(f"제품 동기화 실패: {str(e)}")
         raise HTTPException(status_code=500, detail="제품 동기화 중 오류가 발생했습니다.")
