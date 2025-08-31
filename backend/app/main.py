@@ -13,7 +13,12 @@ from app.api.v1.api import api_router
 load_dotenv()
 
 # Create database tables
-base.Base.metadata.create_all(bind=engine)
+try:
+    base.Base.metadata.create_all(bind=engine)
+    print("Database tables created successfully")
+except Exception as e:
+    print(f"Failed to create database tables: {e}")
+    # Continue without database for now
 
 # Create FastAPI app
 app = FastAPI(
@@ -36,8 +41,8 @@ app.add_middleware(
 # Include API routes
 app.include_router(api_router, prefix="/api/v1")
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Mount static files (commented out for now)
+# app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def root():
